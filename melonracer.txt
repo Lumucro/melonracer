@@ -1,0 +1,11 @@
+"melonracer"
+{
+	"base"		"base"
+	"title"		"Melonracer"
+	"maps"		"^mr_"
+	"menusystem"	"1"
+	
+	"settings"
+	{
+	}
+}
