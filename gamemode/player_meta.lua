@@ -6,9 +6,7 @@ function pm:GetMelonModel()
 
 end
 
-function pm:RespawnMelon( pos )
-
-	if IsValid( self.melon ) then self:DestroyMelon() end
+function pm:SpawnMelon( pos )
 
 	local ent = ents.Create( "prop_physics" )
 	ent:SetModel( self:GetMelonModel() )
@@ -26,26 +24,80 @@ function pm:RespawnMelon( pos )
 
 end
 
+function pm:RespawnMelon( pos )
+
+	if IsValid( self.melon ) then self:DestroyMelon() end
+
+	if (tonumber(MR_ROUNDSTATE) == 1) then
+
+		timer.Simple( MR.RespawnDelay, function()
+
+			self:SpawnMelon( pos )
+
+		end)
+
+	else
+
+		self:SpawnMelon( pos )
+
+	end
+
+end
+
 function pm:DestroyMelon()
 
 	if !IsValid( self.melon ) then return end
 	self.melon:Fire("break", "0", "0")
+	self:AddDeaths(1)
+
+end
+
+function pm:AnnounceWinner()
+
+	net.Start("mr_notifywinner")
+		net.WriteString( self:Nick() )
+	net.Broadcast()
+
+	MR_FINISH.winner = self
+
+	for k,v in pairs(player.GetAll()) do
+		v:ChatPrint( self:Nick() .. " has won this race!" )
+	end
+
+end
+
+function pm:CompleteLap()
+
+	if self.laps == nil then self.laps = 0 end
+
+	self.lastcheckpoint = {checkpoint = 0}
+	self.laps = self.laps + 1
+
+	print('Laps completed: ' .. self.laps)
+
+	net.Start("mr_notifylapcomplete")
+		net.WriteUInt( self.laps , 8 )
+	net.Send( self )
+
+	if tonumber(self.laps) >= tonumber(MR.LapsForVictory) then
+		self:AnnounceWinner()
+	end
 
 end
 
 function pm:PassCheckpoint( ent )
 
 	if self.lastcheckpoint.checkpoint == nil then return end
-	if !MR_ROUNDSTATE == 2 then return end
+	if !(tonumber(MR_ROUNDSTATE) == 1) then return end
 
 	if tonumber(ent.checkpoint) == tonumber(self.lastcheckpoint.checkpoint + 1) then
 		
-		print('went from checkpoint ' .. self.lastcheckpoint.checkpoint .. ' to ' .. ent.checkpoint)
-		self.lastcheckpoint = ent
-
-	else
-
-		print('tried going from checkpoint ' .. self.lastcheckpoint.checkpoint .. ' to ' .. ent.checkpoint)
+		if tonumber(ent.checkpoint) == tonumber(MR_FINISH.checkpoint) then
+			self:CompleteLap()
+		else
+			self.lastcheckpoint = ent
+			print('Passed checkpoint ' .. ent.checkpoint)
+		end
 
 	end
 

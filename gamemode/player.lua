@@ -14,7 +14,15 @@ end
 
 function GM:PlayerInitialSpawn( ply )
 
-	if MR_ROUNDSTATE == 2 then
+	net.Start("mr_getlaps")
+		net.WriteUInt( MR.LapsForVictory, 8 )
+	net.Send( ply )
+
+	net.Start("mr_roundstate")
+		net.WriteUInt( MR_ROUNDSTATE, 8 )
+	net.Send( ply )
+
+	if MR_ROUNDSTATE == 1 then
 		ply:SetTeam( 1 )
 	else
 		ply:SetTeam( 0 )
