@@ -1,4 +1,5 @@
 # melonracer
-Garry's mod melonracer gamemode remake
+Garry's mod melonracer gamemode proof-of-concept remake
 
-experimenting with loading map entities as objectives in a gamemode
+This gamemode is currently no longer available / dead in Garry's Mod
+The code present here serves as proof that it is still possible to make, and that old maps can be made compatible with some hacky but effective code
